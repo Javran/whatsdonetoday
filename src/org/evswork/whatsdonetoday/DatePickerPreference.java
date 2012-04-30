@@ -51,11 +51,11 @@ public class DatePickerPreference extends Preference {
 					public void onDateSet(DatePicker view, int year, int monthOfYear,
 							int dayOfMonth) {
 						DatePickerPreference.this.year = year;
-						DatePickerPreference.this.month = monthOfYear;
+						DatePickerPreference.this.month = monthOfYear + 1;
 						DatePickerPreference.this.day = dayOfMonth;
 						updateUI();
 					}
-				}, year, month, day);
+				}, year, month - 1, day);
 				dialog.show();
 				return true;
 			}
