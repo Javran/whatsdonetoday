@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS Event(
+	_id 		INTEGER PRIMARY KEY AUTOINCREMENT,
+	description	VARCHAR(64),
+	worth		INTEGER,
+	time		VARCHAR(32)
+);
+
+CREATE TABLE IF NOT EXISTS Tag(
+	_id		INTEGER PRIMARY KEY AUTOINCREMENT,
+	title		VARCHAR(32)
+);
+CREATE TABLE IF NOT EXISTS RelEventTag(
+	event_id	INTEGER,
+	tag_id		INTEGER,
+	PRIMARY KEY (event_id, tag_id),
+	FOREIGN KEY (event_id) REFERENCES Event(_id),
+	FOREIGN KEY (tag_id) REFERENCES Tag(_id)
+);
