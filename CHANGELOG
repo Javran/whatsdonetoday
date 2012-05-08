@@ -1,0 +1,8 @@
+Change log:
+
+WhatsDoneToday 20120509
+	added:
+		- now we can decide which tags should be placed in welcome screen
+
+	fixed:
+		- switching between pages might cause NullPointerException
