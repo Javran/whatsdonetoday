@@ -355,6 +355,7 @@ public class EventDatabase {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
+    		db.execSQL(SQL_CREATE_TABLE_WELCOMETAG);
 			db.execSQL(SQL_CREATE_TABLE_EVENT);
 			db.execSQL(SQL_CREATE_TABLE_TAG);
 			db.execSQL(SQL_CREATE_TABLE_RELEVENTTAG);
