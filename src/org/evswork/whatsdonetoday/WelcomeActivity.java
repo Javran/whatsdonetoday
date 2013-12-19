@@ -67,7 +67,7 @@ public class WelcomeActivity extends Activity {
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		
-		Cursor tCur = mDB.getCursorOfTagsSimple();
+		Cursor tCur = mDB.getCursorOfWelcomeScreen();
 		if (tCur.moveToFirst()) {
 			do {
 				infoLayout.addView(stringToTextView(tCur.getString(1) + ": " + mDB.getDayWorthCountByTagId(tCur.getLong(0), dt)),

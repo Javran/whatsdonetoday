@@ -20,12 +20,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorTreeAdapter;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 
 public class TagDetailListActivity extends ExpandableListActivity {
 	private EventDatabase mDB = null;
@@ -33,6 +31,10 @@ public class TagDetailListActivity extends ExpandableListActivity {
 	
 	@Override
 	protected void onPause() {
+		Cursor oldCursor = mAdapter.getCursor();
+		mAdapter.changeCursor(null);
+		if (oldCursor != null)
+			oldCursor.close();
 		mDB.close();
 		mDB = null;
 		super.onPause();
@@ -74,11 +76,11 @@ public class TagDetailListActivity extends ExpandableListActivity {
 	}
 
 	private class TagDetailTreeAdapter extends CursorTreeAdapter {
-		private LayoutInflater mInflater;
+		//private LayoutInflater mInflater;
 		
 		public TagDetailTreeAdapter(Cursor cursor) {
 			super(cursor, getBaseContext());
-			mInflater = LayoutInflater.from(getBaseContext());
+			//mInflater = LayoutInflater.from(getBaseContext());
 		}
 
 		@Override
