@@ -19,6 +19,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class EventDatabase {
 	private Context mContext;
@@ -100,10 +101,13 @@ public class EventDatabase {
 	public void removeTagById(long tagId) {
 		SQLiteDatabase db = getDatabase(true);
 		String idStr = String.valueOf(tagId);
+		String [] arg = new String [] {idStr};
 		// remove all tags
-		db.execSQL("DELETE FROM RelEventTag WHERE tag_id == ? ", new String[] {idStr});
+		db.execSQL("DELETE FROM RelEventTag WHERE tag_id == ? ", arg);
+		// remove tag_id if exists in welcometag
+		db.execSQL("DELETE FROM WelcomeTag WHERE tag_id == ? ", arg);
 		// remove event
-		db.execSQL("DELETE FROM Tag WHERE _id == ? ", new String[] {idStr});
+		db.execSQL("DELETE FROM Tag WHERE _id == ? ", arg);
 	}
 	
 	public void addNewTag(String tagName) {
@@ -135,6 +139,31 @@ public class EventDatabase {
 		cur.close();
 		return retval;
 	}
+	
+
+
+	public void addToWelcomeTag(long id) {
+		String [] arg = new String [] { String.valueOf(id) };
+		SQLiteDatabase db = getDatabase(true);
+		Cursor c = db.rawQuery("SELECT tag_id FROM WelcomeTag WHERE tag_id == ? ", arg);
+		if (c.moveToFirst())
+		{
+			// has inserted already
+			// nothing to do.
+		}
+		else
+		{
+			db.execSQL("INSERT INTO WelcomeTag VALUES(?) ", arg);
+		}
+		c.close();
+		
+	}
+	
+	public void removeFromWelcomeTag(long id) {
+		String [] arg = new String [] { String.valueOf(id) };
+		getDatabase(true).execSQL("DELETE FROM WelcomeTag WHERE tag_id == ? ", arg);
+	}
+
 	
 	public Cursor getCursorOfDates() {
 		return getDatabase(false)
@@ -194,7 +223,17 @@ public class EventDatabase {
 			.rawQuery(
 				"SELECT _id, title " + 
 					"FROM Tag " +
-				"ORDER BY _id" , null );
+				"ORDER BY _id " , null );
+	}
+	
+	public Cursor getCursorOfWelcomeScreen() {
+		return getDatabase(false)
+			.rawQuery(
+				"SELECT _id, title " + 
+					"FROM Tag, WelcomeTag " +
+					"WHERE Tag._id == WelcomeTag.tag_id " + 
+				"ORDER BY _id ", null);
+		
 	}
 	
 	public Cursor getCursorOfEventsByTag(String tagId) {
@@ -269,7 +308,11 @@ public class EventDatabase {
 	
 	private static class EventDatabaseOpenHelper extends SQLiteOpenHelper {
 		private final static String DATABASE_NAME = "event_database";
-		private final static int DATABASE_VERSION = 3;
+		
+		private final static int DB_VER_1 = 3;
+		private final static int DB_VER_2 = 4;
+		
+		private final static int DATABASE_VERSION = DB_VER_2;
 		private final static String SQL_CREATE_TABLE_EVENT = 
 			"CREATE TABLE Event( " +
 				"_id 		INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -289,6 +332,13 @@ public class EventDatabase {
 			"	tag_id		INTEGER, " +
 			"	PRIMARY KEY (event_id, tag_id), " +
 			"	FOREIGN KEY (event_id) REFERENCES Event(_id), " +
+			"	FOREIGN KEY (tag_id) REFERENCES Tag(_id) " +
+			") ";
+		
+		private final static String SQL_CREATE_TABLE_WELCOMETAG = 
+			"CREATE TABLE WelcomeTag( " + 
+			"	tag_id		INTEGER, " +
+			"	PRIMARY KEY (tag_id), " + 
 			"	FOREIGN KEY (tag_id) REFERENCES Tag(_id) " +
 			") ";
 		
@@ -312,12 +362,20 @@ public class EventDatabase {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			db.execSQL(SQL_DROP_TABLE_EVENT);
-			db.execSQL(SQL_DROP_TABLE_TAG);
-			db.execSQL(SQL_DROP_TABLE_RELEVENTTAG);
-			onCreate(db);
+			if (newVersion == DB_VER_2 && oldVersion == DB_VER_1) {
+				db.execSQL(SQL_CREATE_TABLE_WELCOMETAG);
+				Log.d("AndTest", "database update done Ver1=>Ver2.");
+				
+			} else
+			{	
+				db.execSQL(SQL_DROP_TABLE_EVENT);
+				db.execSQL(SQL_DROP_TABLE_TAG);
+				db.execSQL(SQL_DROP_TABLE_RELEVENTTAG);
+				onCreate(db);
+			}
 		}
 		
 	}
+
 
 }

@@ -41,6 +41,10 @@ public class TagManageListActivity extends ListActivity {
 
 	@Override
 	protected void onPause() {
+		Cursor oldCursor = mAdapter.getCursor();
+		mAdapter.changeCursor(null);
+		if (oldCursor != null)
+			oldCursor.close();
 		mDB.close();
 		mDB = null;
 		super.onPause();
@@ -50,14 +54,17 @@ public class TagManageListActivity extends ListActivity {
 	protected void onResume() {
 		if (mDB == null)
 			mDB = new EventDatabase(getBaseContext());
+		Cursor oldCursor = mAdapter.getCursor();
 		mAdapter.changeCursor(mDB.getCursorOfTagsSimple());
+		if (oldCursor != null)
+			oldCursor.close();
 		super.onResume();
 	}
 	
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, final long id) {
 		new AlertDialog.Builder(this)
-			.setItems(new String[] { "Modify tag", "Remove tag", "Cancel"}, new DialogInterface.OnClickListener() {
+			.setItems(new String[] { "Modify tag", "Remove tag", "Show/Hide in welcome screen", "Cancel"}, new DialogInterface.OnClickListener() {
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -68,6 +75,9 @@ public class TagManageListActivity extends ListActivity {
 					case 1: // remove
 						onRemoveTag(id);
 						break;
+					case 2:
+						onShowHideTagInWelcome(id);
+						break;
 					}
 				}
 			})
@@ -75,6 +85,8 @@ public class TagManageListActivity extends ListActivity {
 		
 		
 	}
+
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +180,27 @@ public class TagManageListActivity extends ListActivity {
 				}
 			})
 			.setNegativeButton("No", null)
+			.show();
+	}
+	
+
+	private void onShowHideTagInWelcome(final long id) {
+		new AlertDialog.Builder(this)
+			.setMessage("Show/Hide this tag in welcome screen? ")
+			.setPositiveButton("Show", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mDB.addToWelcomeTag(id);
+				}
+			})
+			.setNegativeButton("Hide", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mDB.removeFromWelcomeTag(id);
+				}
+			})
 			.show();
 	}
 	
